@@ -1,0 +1,52 @@
+apiVersion : apps/v1
+kind: StatefulSet
+metadata:
+  name: song-db
+  namespace: kubernetes-for-devs
+  labels:
+    app: song-db
+spec:
+  serviceName: song-db
+  selector:
+    matchLabels:
+      app: song-db
+  template:
+    metadata:
+      labels:
+        app: song-db
+    spec:
+      containers:
+        - name : song-db
+          image: postgres:15-alpine
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: POSTGRES_PASSWORD
+              value: postgresPW
+          ports:
+            - containerPort: 5432
+              name: song-db
+          volumeMounts:
+            - name: postgresql-persistent-storage
+              mountPath: /var/lib/postgresql/data
+      volumes:
+      - name: postgresql-persistent-storage
+        persistentVolumeClaim:
+          claimName: song-persistent-volume-claim
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: song-db
+  namespace: kubernetes-for-devs
+  labels:
+    app: song-db
+spec:
+  type: ClusterIP
+  selector:
+    app: song-db
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
