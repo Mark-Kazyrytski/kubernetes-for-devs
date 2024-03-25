@@ -21,15 +21,45 @@ spec:
           imagePullPolicy: IfNotPresent
           env:
             - name: SPRING_DATASOURCE_URL
-              value: 'jdbc:postgresql://resource-db:5432/postgres'
+              valueFrom:
+                configMapKeyRef:
+                  name: resource-service-configmap
+                  key: database-url
             - name: SPRING_DATASOURCE_USERNAME
-              value: 'postgres'
+              valueFrom:
+                secretKeyRef:
+                  name: resource-service-secret
+                  key: database-username
             - name: SPRING_DATASOURCE_PASSWORD
-              value: 'postgresPW'
+              valueFrom:
+                secretKeyRef:
+                  name: resource-service-secret
+                  key: database-password
             - name: SONGSERVICE_HOST
-              value: 'http://song-service:8080'
+              valueFrom:
+                configMapKeyRef:
+                  name: resource-service-configmap
+                  key: song-service-host
           ports:
             - containerPort: 8080
+          startupProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            failureThreshold: 30
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 3
 
 ---
 

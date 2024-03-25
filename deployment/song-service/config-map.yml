@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: kubernetes-for-devs
+  name: song-service-configmap
+data:
+  database-url: jdbc:postgresql://song-db:5432/postgres

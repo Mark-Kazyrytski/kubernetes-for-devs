@@ -21,13 +21,31 @@ spec:
           imagePullPolicy: IfNotPresent
           env:
             - name: POSTGRES_PASSWORD
-              value: postgresPW
+              valueFrom:
+                secretKeyRef:
+                  name: song-service-secret
+                  key: database-password
           ports:
             - containerPort: 5432
               name: song-db
           volumeMounts:
             - name: postgresql-persistent-storage
               mountPath: /var/lib/postgresql/data
+          startupProbe:
+            exec:
+              command: ["psql", "-U", "postgres", "-c", "SELECT 1"]
+            failureThreshold: 30
+            periodSeconds: 3
+          livenessProbe:
+            exec:
+              command: ["psql", "-U", "postgres", "-c", "SELECT 1"]
+            initialDelaySeconds: 10
+            periodSeconds: 3
+          readinessProbe:
+            exec:
+              command: ["psql", "-U", "postgres", "-c", "SELECT 1"]
+            initialDelaySeconds: 10
+            periodSeconds: 3
       volumes:
       - name: postgresql-persistent-storage
         persistentVolumeClaim:
