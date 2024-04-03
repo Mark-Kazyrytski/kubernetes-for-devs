@@ -17,18 +17,45 @@ spec:
     spec:
       containers:
         - name : song-service
-          image: markkazyrytski/song-service:v1.0.0
+          image: markkazyrytski/song-service:v1.1.0
           imagePullPolicy: IfNotPresent
           env:
             - name: SPRING_DATASOURCE_URL
-              value: 'jdbc:postgresql://song-db:5432/postgres'
+              valueFrom:
+                configMapKeyRef:
+                  name: song-service-configmap
+                  key: database-url
             - name: SPRING_DATASOURCE_USERNAME
-              value: postgres
+              valueFrom:
+                secretKeyRef:
+                  name: song-service-secret
+                  key: database-username
             - name: SPRING_DATASOURCE_PASSWORD
-              value: postgresPW
+              valueFrom:
+                secretKeyRef:
+                  name: song-service-secret
+                  key: database-password
           ports:
             - containerPort: 8080
               name: song-service
+          startupProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            failureThreshold: 30
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 3
 
 ---
 
@@ -40,7 +67,7 @@ metadata:
   labels:
     app: song-service
 spec:
-  type: ClusterIP
+  type: NodePort
   selector:
     app: song-service
   ports:
