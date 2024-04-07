@@ -1,0 +1,73 @@
+apiVersion : apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Values.postgres.label }}
+  namespace: {{ .Values.namespase }}
+  labels:
+    {{- include "chart.db.labels" . | nindent 4 }}
+spec:
+  serviceName: {{ .Values.postgres.label | quote }}
+  selector:
+    matchLabels:
+      {{- include "chart.db.labels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "chart.db.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      containers:
+        - name: {{ .Values.postgres.label }}
+          image: postgres:15-alpine
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secret.name }}
+                  key: database-password
+          ports:
+            - containerPort: {{ .Values.postgres.port }}
+              name: http
+          volumeMounts:
+            - name: {{ .Values.postgres.label }}
+              mountPath: /var/lib/postgresql/data
+          startupProbe:
+            exec:
+              command: ["psql", "-U", "postgres", "-c", "SELECT 1"]
+            failureThreshold: 30
+            periodSeconds: 3
+          livenessProbe:
+            exec:
+              command: ["psql", "-U", "postgres", "-c", "SELECT 1"]
+            initialDelaySeconds: 10
+            periodSeconds: 3
+          readinessProbe:
+            exec:
+              command: ["psql", "-U", "postgres", "-c", "SELECT 1"]
+            initialDelaySeconds: 10
+            periodSeconds: 3
+      volumes:
+      - name: {{ .Values.postgres.label }}
+        persistentVolumeClaim:
+          claimName: {{ .Values.pvc.name }}
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.postgres.service.name }}
+  namespace: {{ .Values.namespase }}
+  labels:
+    {{- include "chart.db.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+      {{- include "chart.db.labels" . | nindent 6 }}
+  ports:
+    - protocol: TCP
+      port: {{ .Values.postgres.port }}
+      targetPort: {{ .Values.postgres.port }}

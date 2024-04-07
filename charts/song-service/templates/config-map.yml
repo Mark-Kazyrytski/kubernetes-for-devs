@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.config.name }}
+  namespace: {{ .Values.namespase }}
+  labels:
+    {{- include "chart.db.labels" . | nindent 4 }}
+data:
+  database-url: {{ .Values.postgres.db.url }}
