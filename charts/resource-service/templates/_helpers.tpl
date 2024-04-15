@@ -57,10 +57,15 @@ meta.helm.sh/release-namespace: {{ .Values.namespase }}
 
 {{- define "serviceappname" -}}
 {{- $appName := default  .Chart.Name -}}
-{{- printf "%s-%s-%s" $appName .Values.api "service" | trunc 63 | trimSuffix "-" -}}
+{{- printf "%s-%s" $appName "service" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{- define "deploymentappname" -}}
 {{- $appName := default .Chart.Name -}}
 {{- printf "%s-%s-%s" $appName .Values.api "deployment" | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{- define "ingressappname" -}}
+{{- $appName := default .Chart.Name -}}
+{{- printf "%s-%s" $appName "ingress" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
