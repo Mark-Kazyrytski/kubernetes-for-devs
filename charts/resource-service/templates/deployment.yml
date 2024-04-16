@@ -64,7 +64,7 @@ metadata:
   labels:
     {{- include "chart.selectorLabels" . | nindent 6 }}
 spec:
-  type: NodePort
+  type: ClusterIP
   selector:
       {{- include "chart.selectorLabels" . | nindent 6 }}
   ports:
