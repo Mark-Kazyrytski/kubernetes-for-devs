@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.config.name }}
+  namespace: {{ .Values.namespase }}
+  labels:
+    {{- include "chart.db.labels" . | nindent 4 }}
+data:
+  song-service-host: http://song-api-service:8080
+  database-url: {{ .Values.postgres.db.url }}

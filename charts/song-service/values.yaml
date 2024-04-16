@@ -1,0 +1,69 @@
+release:
+  name: k8s
+
+namespase: kubernetes-for-devs
+
+replicaCount: 2
+
+config:
+  name: song-config
+
+secret:
+  name: song-secret
+
+pvc:
+  name: song-pvc
+
+postgres:
+  label: song-postgres-db
+  port: 5432
+  service:
+    name: song-postgres-db-service
+  db:
+    url: jdbc:postgresql://song-postgres-db-service:5432/postgres
+
+service:
+  port: 8080
+
+startupProbe:
+  initialDelaySeconds: 10
+  failureThreshold: 5
+  periodSeconds: 15
+  timeoutSeconds: 5
+  successThreshold: 1
+  httpGet:
+    path: /actuator/health
+    port: 8080
+livenessProbe:
+  initialDelaySeconds: 15
+  periodSeconds: 10
+  timeoutSeconds: 5
+  successThreshold: 1
+  failureThreshold: 3
+  httpGet:
+    path: /actuator/health
+    port: 8080
+readinessProbe:
+  initialDelaySeconds: 10
+  periodSeconds: 5
+  timeoutSeconds: 5
+  successThreshold: 1
+  failureThreshold: 2
+  httpGet:
+    path: /actuator/health
+    port: 8080
+
+image:
+  repository: markkazyrytski/song-service
+  pullPolicy: IfNotPresent
+  tag: v1.1.0
+
+imagePullSecrets: [ ]
+nameOverride: ""
+fullnameOverride: ""
+api: api
+
+podLabels: { }
+
+nodeSelector: { }
+
